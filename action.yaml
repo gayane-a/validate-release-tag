@@ -1,5 +1,11 @@
-name: 'Hello World'
-description: 'Greet someone and record the time'
+name: 'Validate tags'
+description: 'Validate release/pre-release tags'
+inputs:
+  prerelease:
+    description: 'Tag is prerelease'
+    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
+  args:
+    - ${{ inputs.prerelease }}

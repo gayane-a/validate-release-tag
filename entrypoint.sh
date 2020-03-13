@@ -1,18 +1,24 @@
-#!/bin/sh -l
+#!/bin/bash
+
+set -e
+set -o pipefail
 
 echo "Start validation $1"
 
 
-echo ::set-env name=BRANCH::$(git branch -r --contains ${GITHUB_SHA} | grep "")
-echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF} | sed -e "s/refs\/tags\///g" | sed -e "s/\//-/g")
+BRANCH=$(git branch -r --contains ${GITHUB_SHA} | grep "")
+RELEASE_VERSION=$(echo ${GITHUB_REF} | sed -e "s/refs\/tags\///g" | sed -e "s/\//-/g")
 
 MASTER_BRANCH_NAME='origin/master'
 RELEASE_PREFIX='r-'
 
-if [[ "${{ env.BRANCH }}" == *"$MASTER_BRANCH_NAME"* ]] && [[ "${{ env.RELEASE_VERSION }}" == "$RELEASE_PREFIX"* ]]; then
-  echo ::set-output name=validation_response::"Release tag validation succeeded!"
+if [[ "${INPUT_PRERELEASE}" != true ]] && [[ "$BRANCH" == *"$MASTER_BRANCH_NAME"* ]] && [[ "$RELEASE_VERSION" == "$RELEASE_PREFIX"* ]]; then
+  echo "Release tag validation succeeded!"
+  exit 0
+elif [[ "${INPUT_PRERELEASE}" == true ]]; then
+  echo "Pre-Release tag validation succeeded!"
   exit 0
 else
-  echo ::set-output name=validation_response::"Release tag validation failed!"
+  echo "Tag validation failed!"
   exit 1
 fi
